@@ -3,6 +3,8 @@ from flask import redirect
 from flask import request
 from flask import jsonify
 import httplib2
+
+from apiclient import discovery
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 from apiclient.discovery import build
@@ -116,8 +118,32 @@ def get_user_labels():
     user_id = request.args.get('user_id')
     access_token = request.args.get('access_token')
 
-    print("Access Token is:")
-    print(access_token)
+    print("------------------------- Store retriving --------------- ")
+    print(store.get(user_id))
+
+    if not user_id or not access_token:
+        return jsonify({
+            'status': 400,
+            'message': "Invalid UserID/Authz Code Supplied"
+        })
+
+    credentials = store.get(user_id)
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('gmail', 'v1', http=http)
+    results = service.users().labels().list(userId=user_id).execute()
+    labels = results.get('labels', [])
+    print("------- Printing Labels ---------")
+    print(labels)
+
+    return jsonify({
+        'status': 200,
+        'message': "labels are correct"
+    })
+
+@flask_app.route('/user_history')
+def get_user_history():
+    user_id = request.args.get('user_id')
+    access_token = request.args.get('access_token')
 
     print("------------------------- Store retriving --------------- ")
     print(store.get(user_id))
@@ -128,17 +154,57 @@ def get_user_labels():
             'message': "Invalid UserID/Authz Code Supplied"
         })
 
-    # credentials = flow.step2_exchange(authz_code)
-    # http = credentials.authorize(httplib2.Http())
-    # service = discovery.build('gmail', 'v1', http=http)
-    # results = service.users().labels().list(userId=user_id).execute()
-    # labels = results.get('labels', [])
-    # print("------- Printing Labels ---------")
-    # print(labels)
+    credentials = store.get(user_id)
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('gmail', 'v1', http=http)
+    history = service.users().history().list(userId=user_id,startHistoryId='1').execute()
+    changes = history['history'] if 'history' in history else []
+    while 'nextPageToken' in history:
+        page_token = history['nextPageToken']
+        history = service.users().history().list(userId=user_id, startHistoryId='1', pageToken=page_token).execute()
+        changes.extend(history['history'])
 
-    print(user_id, access_token)
+    print(" -------- The history changes here are ----------- ")
+    print(changes)
 
     return jsonify({
-        'status': 400,
-        'message': "labels are correct"
+        'status': 200,
+        'message': "history are correct"
+    })
+
+@flask_app.route('/user_messages')
+def get_user_messages():
+    user_id = request.args.get('user_id')
+    access_token = request.args.get('access_token')
+
+    print("------------------------- Store retriving --------------- ")
+    print(store.get(user_id))
+
+    if not user_id or not access_token:
+        return jsonify({
+            'status': 400,
+            'message': "Invalid UserID/Authz Code Supplied"
+        })
+
+    credentials = store.get(user_id)
+
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('gmail', 'v1', http=http)
+
+    response = service.users().messages().list(userId=user_id).execute()
+    messages = []
+    if 'messages' in response:
+        messages.extend(response['messages'])
+
+    while 'nextPageToken' in response:
+        page_token = response['nextPageToken']
+        response = service.users().messages().list(userId=user_id, pageToken=page_token).execute()
+        messages.extend(response['messages'])
+
+    print("---------- Printing Messages here -------------- ")
+    print messages
+
+    return jsonify({
+        'status': 200,
+        'message': "Messages are correct"
     })

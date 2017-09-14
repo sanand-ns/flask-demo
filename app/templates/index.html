@@ -5,7 +5,7 @@
 <script type="text/javascript">
   $(document).ready(function() {
 
-    alert($('#authorization_code').val());
+    $('#response').html("");
 
     $('#btn-credentials').on('click', function() {
       console.log("Clicking the button now!");
@@ -17,6 +17,10 @@
         },
         success: function(data) {
           console.log(data);
+
+          $('#response').html("The Access Token and User ID are: ");
+          $('#response').html(data);
+
           $('#user_id').val(data.user.user_id);
           $('#access_token').val(data.user.access_token);
         },
@@ -38,6 +42,55 @@
         },
         success: function(data) {
           console.log(data);
+
+          $('#response').html("The User Labels for the given user are: ");
+          $('#response').html(data);
+        },
+        error: function(data) {
+          console.log(data);
+        }
+      });
+    });
+
+    // for the user history AJAX call
+    $('#btn-history').on('click', function() {
+      console.log("Clicking the history button now!");
+      $.ajax({
+        type: 'GET',
+        url: '/user_history',
+        data: {
+          user_id: $('#user_id').val(),
+          access_token: $('#access_token').val()
+        },
+        success: function(data) {
+          console.log(data);
+
+          $('#response').html("The User History for the given user are: ");
+          $('#response').html(data);
+
+        },
+        error: function(data) {
+          console.log(data);
+        }
+      });
+    });
+
+    // for the user messages AJAX call
+    $('#btn-messages').on('click', function() {
+      console.log("Clicking the messages button now!");
+      $.ajax({
+        type: 'GET',
+        url: '/user_messages',
+        data: {
+          user_id: $('#user_id').val(),
+          access_token: $('#access_token').val()
+        },
+        success: function(data) {
+          console.log(data);
+
+          $('#response').html("The User Messages for the given user are: ");
+          $('#response').html(data);
+
         },
         error: function(data) {
           console.log(data);
@@ -57,15 +110,21 @@
   <input type="hidden" id="authorization_code" value="{{authz_code}}" />
   <input type="hidden" id="user_id" value="{{user_id}}" />
   <input type="hidden" id="access_token" value="{{access_token}}" />
+
   <button id="btn-credentials" class="btn btn-lg btn-primary">
-    Get Credentials
+    Press Me first!
   </button>
   <button id="btn-labels" class="btn btn-lg btn-primary">
-    Get User Labels
+    Now, Press me!
+  </button>
+  <button id="btn-history" class="btn btn-lg btn-primary">
+    Now, Its my turn
+  </button>
+  <button id="btn-messages" class="btn btn-lg btn-primary">
+    Now, Just this one
   </button>
 
-  <p>
-    {{ response }}
+  <p id="response">
   </p>
 
 </div>
