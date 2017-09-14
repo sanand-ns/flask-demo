@@ -98,31 +98,54 @@
       });
     });
 
+    // for the service account using JSON file AJAX Call
+    $('#btn-service-account').on('click', function() {
+      console.log("Clicking the messages button now!");
+      $.ajax({
+        type: 'GET',
+        url: '/service_account',
+        success: function(data) {
+          console.log(data);
+        },
+        error: function(data) {
+          console.log(data);
+        }
+      });
+    });
+
   });
 
 
 </script>
 
 <div class="jumbotron">
-  <h1>Flask Is Awesome</h1>
-  <p class="lead">And I'm glad to be learning so much about it!</p>
+  <h1>The Stupid App</h1>
+  <p class="lead">Keep the browser and server console open to see the action happening!</p>
 
   <input type="hidden" id="authorization_code" value="{{authz_code}}" />
   <input type="hidden" id="user_id" value="{{user_id}}" />
   <input type="hidden" id="access_token" value="{{access_token}}" />
 
-  <button id="btn-credentials" class="btn btn-lg btn-primary">
-    Press Me first!
-  </button>
-  <button id="btn-labels" class="btn btn-lg btn-primary">
-    Now, Press me!
-  </button>
-  <button id="btn-history" class="btn btn-lg btn-primary">
-    Now, Its my turn
-  </button>
-  <button id="btn-messages" class="btn btn-lg btn-primary">
-    Now, Just this one
-  </button>
+  <div class="row" style="margin-top: 2%;">
+    <button id="btn-credentials" class="btn btn-lg btn-primary">
+      1. Authorize Single User
+    </button>
+    <button id="btn-labels" class="btn btn-lg btn-primary">
+      2. Get User Labels
+    </button>
+    <button id="btn-history" class="btn btn-lg btn-primary">
+      3. Get USer History
+    </button>
+    <button id="btn-messages" class="btn btn-lg btn-primary">
+      4. Get User Messages
+    </button>
+  </div>
+
+  <div class="row" style="margin-top: 2%;">
+    <button id="btn-service-account" class="btn btn-lg btn-primary">
+      1. authorize Service Account
+    </button>
+  </div>
 
   <p id="response">
   </p>

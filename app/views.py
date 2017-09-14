@@ -8,6 +8,7 @@ from apiclient import discovery
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 from apiclient.discovery import build
+from oauth2client.service_account import ServiceAccountCredentials
 
 from app import flask_app
 from src import test
@@ -207,4 +208,37 @@ def get_user_messages():
     return jsonify({
         'status': 200,
         'message': "Messages are correct"
+    })
+
+@flask_app.route('/service_account')
+def auth_service_account():
+    print("---------------------- Authorising the Service Account ----------------------")
+
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(
+    flask_app.config["SERVICE_ACCOUNT_LOCATION"], scopes=flask_app.config["SERVICE_ACCOUNT_SCOPES"])
+
+    print("------------ Printing Credentials for Service Account here -------------- ")
+    print(credentials)
+
+    delegated_credentials = credentials.create_delegated('sanand@netskope.com')
+    print("---------- Delegated Credentials are ------------- ")
+    print(delegated_credentials)
+
+    service = build('admin', 'directory_v1', credentials=delegated_credentials)
+    print("---------- The Authorized service ------------- ")
+    print(service)
+
+    # users = service.users().list(customer='my_customer', maxResults=10, orderBy='email').execute()
+    # users = results.get('users', [])
+    #
+    # if not users:
+    #     print('No users in the domain.')
+    # else:
+    #     print('Users:')
+    #     for user in users:
+    #         print('{0} ({1})'.format(user['primaryEmail'],user['name']['fullName']))
+
+    return jsonify({
+        'status': 200,
+        'message': "Authorization if Service Account is correct"
     })
